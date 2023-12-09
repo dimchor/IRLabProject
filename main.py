@@ -7,7 +7,7 @@ def main():
     try:
         publications = webcrawler.PubMed.crawl('covid')
         for publication in publications:
-            print(publication)
+            print(publication, '\n-------------------------------------')
         print(f'Number of results: {len(publications)}')
     except webcrawler.InvalidRequestException as e:
         print(e)

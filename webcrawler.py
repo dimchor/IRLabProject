@@ -3,8 +3,6 @@ import requests
 import enum
 
 class InvalidRequestException(Exception):
-    status_code: str
-
     def __init__(self, status_code):
         self.status_code = status_code
     
@@ -13,9 +11,6 @@ class InvalidRequestException(Exception):
         return f'Invalid request: {self.status_code}'
     
 class InvalidResultsNumberException(Exception):
-    results_asked: int
-    results_limit: int
-
     def __init__(self, results_asked, results_exprected):
         self.results_asked = results_asked
         self.results_limit = results_exprected
@@ -26,8 +21,6 @@ class InvalidResultsNumberException(Exception):
  you up to {self.results_limit} :/'
 
 class InvalidPageNumberException(Exception):
-    error: str
-
     def __init__(self, error):
         self.error = error
     
@@ -35,11 +28,12 @@ class InvalidPageNumberException(Exception):
         return f'page number error: {self.error}'
 
 class Publication:
-    pmid = str()
-    title = str()
-    authors = str()
-    abstract = str()
-    date = str()
+    def __init__(self):
+        self.pmid = str()
+        self.title = str()
+        self.authors = []
+        self.abstract = str()
+        self.date = str()
     
     def __str__(self):
         return f'{self.pmid}, {self.title}, {self.authors}, {self.abstract}, \
@@ -130,10 +124,11 @@ class PubMed:
                 while True:
                     authors_part, last_index = PubMed.parse_field(
                         r, 'FAU', last_index)
-                    publication.authors += authors_part
                     if last_index == -1:
                         break
+                    publication.authors.append(authors_part)
                 
                 publications.append(publication)
+                
 
         return publications
