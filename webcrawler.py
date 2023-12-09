@@ -6,7 +6,6 @@ class InvalidRequestException(Exception):
     def __init__(self, status_code):
         self.status_code = status_code
     
-    @classmethod
     def __str__(self) -> str:
         return f'Invalid request: {self.status_code}'
     
@@ -15,7 +14,6 @@ class InvalidResultsNumberException(Exception):
         self.results_asked = results_asked
         self.results_limit = results_exprected
 
-    @classmethod
     def __str__(self) -> str:
         return f'You asked for {self.results_asked} results but I can only give\
  you up to {self.results_limit} :/'
