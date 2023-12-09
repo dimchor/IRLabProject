@@ -3,16 +3,36 @@ import requests
 import enum
 
 class InvalidRequestException(Exception):
-    status_code = str()
+    status_code: str
 
     def __init__(self, status_code):
         self.status_code = status_code
     
+    @classmethod
     def __str__(self) -> str:
         return f'Invalid request: {self.status_code}'
     
+class InvalidResultsNumberException(Exception):
+    results_asked: int
+    results_limit: int
+
+    def __init__(self, results_asked, results_exprected):
+        self.results_asked = results_asked
+        self.results_limit = results_exprected
+
+    @classmethod
+    def __str__(self) -> str:
+        return f'You asked for {self.results_asked} results but I can only give\
+ you up to {self.results_limit} :/'
+
 class InvalidPageNumberException(Exception):
-    pass
+    error: str
+
+    def __init__(self, error):
+        self.error = error
+    
+    def __str__(self):
+        return f'page number error: {self.error}'
 
 class Publication:
     pmid = str()
@@ -26,7 +46,7 @@ class Publication:
 {self.date}'
 
 class PubMed:
-    class ResultsPerPage(enum.Enum):
+    class ResultsPerPage(enum.IntEnum):
         ten = 10
         twenty = 20
         fifty = 50
@@ -34,22 +54,51 @@ class PubMed:
         twohundred = 200
 
     @staticmethod
-    def crawl(query: str, pages_n: int = 1) -> list[Publication]:
+    def parse_field(input:str, field: str, start: int) -> (str, int):
+        OFFSET = 6
+        NEW_LINE = '\r\n'
+        NEW_LINE_LEN = 2
+
+        ret = str()
+        first_index = input.find(field, start)
+        if first_index == -1:
+            return '', first_index
+        else:
+            first_index += OFFSET
+        while True:
+            second_index = input.find(NEW_LINE, first_index)
+            ret += input[first_index:second_index]
+            if input[second_index + NEW_LINE_LEN] != ' ':
+                return ret, second_index + NEW_LINE_LEN
+            else:
+                first_index = second_index + NEW_LINE_LEN + OFFSET
+
+    @staticmethod
+    def crawl(query: str, pages_n: int = 1, 
+              rpp: ResultsPerPage = ResultsPerPage.ten) -> list[Publication]:
         # check if the page number is valid, because pubmed may display up to 
         # 10'000 results
+        LIMIT = 10000
+        if (pages_n < 0):
+            raise InvalidPageNumberException(
+                'Negative numbers are not accepted!')
+        elif (pages_n * rpp > LIMIT):
+            raise InvalidResultsNumberException(pages_n * rpp, LIMIT)
 
         # process it so that it can be used with PubMed
         query.replace(' ', '+')
 
-        base = 'https://pubmed.ncbi.nlm.nih.gov/'
-        search = '?term='
-        page = '&page='
-        size = '&size='
+        BASE = 'https://pubmed.ncbi.nlm.nih.gov/'
+        SEARCH = '?term='
+        PAGE = '&page='
+        SIZE = '&size='
+        FORMAT = '&format=pubmed'
 
         publications = []
-        for i in range(1, pages_n + 1):
-        # search and get response
-            response = requests.get(base + search + query + page + str(i))
+
+        for page in range(1, pages_n + 1):
+            response = requests.get(BASE + SEARCH + query + PAGE + str(page) + 
+                                    SIZE + str(rpp) + FORMAT)
             if response.status_code != 200:
                 raise InvalidRequestException(response.status_code)
             
@@ -57,32 +106,34 @@ class PubMed:
             soup = BeautifulSoup(response.text, 'html.parser')
 
             # get content
-            results = soup.find_all('div', { 'class': 'docsum-content' })
+            results: str = soup.find('pre').text
+            
+            results = results.split('\r\n\r\n') # why pubmed, why
 
-            for result in results:
+            for r in results:
+                last_index = 0
+
                 publication = Publication()
-                a_tag = result.find('a')
-                publication.pmid = a_tag['href'].replace('/','')
-                publication.title = a_tag.text.strip()
-                publication.authors = result.find_all(
-                    'span', { 'class': 'docsum-authors full-authors' }
-                )[0].text.strip()
-                citation = result.find_all(
-                    'span', { 'class': 
-                            'docsum-journal-citation full-journal-citation' }
-                )[0].text.strip()
-                publication.date = citation[citation.find('.') + 2:
-                                            citation.find(';')]
 
-                paper_response = requests.get(base + publication.pmid)
-                if paper_response.status_code != 200:
-                    raise InvalidRequestException(paper_response.status_code)
+                publication.pmid, last_index = PubMed.parse_field(
+                    r, 'PMID', last_index)
 
-                paper_soup = BeautifulSoup(paper_response.text, 'html.parser')
-                publication.abstract = paper_soup.find_all(
-                    'div', { 'class': 'abstract-content selected' }
-                )[0].find('p').text.strip()
+                publication.date, last_index = PubMed.parse_field(
+                    r, 'DP', last_index)
+                
+                publication.title, last_index = PubMed.parse_field(
+                    r, 'TI', last_index)
+                
+                publication.abstract, last_index = PubMed.parse_field(
+                    r, 'AB', last_index)
+                
+                while True:
+                    authors_part, last_index = PubMed.parse_field(
+                        r, 'FAU', last_index)
+                    publication.authors += authors_part
+                    if last_index == -1:
+                        break
+                
+                publications.append(publication)
 
-                publications.append(publication) 
-        
         return publications
