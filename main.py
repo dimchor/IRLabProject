@@ -1,4 +1,6 @@
 import webcrawler
+import json
+import datetime
 
 def main():
     
@@ -6,9 +8,10 @@ def main():
 
     try:
         publications = webcrawler.PubMed.crawl('covid')
-        for publication in publications:
-            print(publication, '\n-------------------------------------')
-        print(f'Number of results: {len(publications)}')
+        json_str = json.dumps([p.__dict__ for p in publications])
+        f = open(f'/data/data-{datetime.datetime.now()}.json', 'wt')
+        f.write(json_str)
+        f.close()
     except webcrawler.InvalidRequestException as e:
         print(e)
 
