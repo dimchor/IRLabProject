@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import enum
+import json
 
 class InvalidRequestException(Exception):
     def __init__(self, status_code):
@@ -36,6 +37,30 @@ class Publication:
     def __str__(self):
         return f'{self.pmid}, {self.title}, {self.authors}, {self.abstract}, \
 {self.date}'
+    
+    @staticmethod
+    def export_publications(filename: str, data: list):
+        json_str = json.dumps([p.__dict__ for p in data])
+        f = open(filename, 'wt')
+        f.write(json_str)
+        f.close()
+
+    @staticmethod
+    def import_publications(filename: str) -> list:
+        f = open(filename, 'rt')
+        json_str = f.read()
+        f.close()
+        json_list = json.loads(json_str)
+        publications = []
+        for item in json_list:
+            publication = Publication()
+            publication.pmid = item['pmid']
+            publication.title = item['title']
+            publication.authors = item['authors']
+            publication.abstract = item['abstract']
+            publication.date = item['date']
+            publications.append(publication)
+        return publications
 
 class PubMed:
     class ResultsPerPage(enum.IntEnum):
