@@ -46,7 +46,7 @@ class PubMed:
         twohundred = 200
 
     @staticmethod
-    def parse_field(input:str, field: str, start: int) -> (str, int):
+    def parse_field(input: str, field: str, start: int) -> (str, int):
         OFFSET = 6
         NEW_LINE = '\r\n'
         NEW_LINE_LEN = 2
@@ -60,10 +60,31 @@ class PubMed:
         while True:
             second_index = input.find(NEW_LINE, first_index)
             ret += input[first_index:second_index]
-            if input[second_index + NEW_LINE_LEN] != ' ':
+            if second_index + NEW_LINE_LEN >= len(input) or \
+                input[second_index + NEW_LINE_LEN] != ' ':
                 return ret, second_index + NEW_LINE_LEN
             else:
                 first_index = second_index + NEW_LINE_LEN + OFFSET
+
+    @staticmethod
+    def parse_field_n(input: str, field: str, start: int, end: int):
+        whole = []
+        inner_start = start
+        while True:
+            part, inner_start = PubMed.parse_field(input, field, inner_start)
+            if inner_start > end or inner_start == -1:
+                break
+            else:
+                start = inner_start
+            whole.append(part)
+        return whole, start
+
+    @staticmethod
+    def find_end(input: str, start: int) -> int:
+        end = input.find('\r\n\r\n', start)
+        if end == -1: # we've reached the end
+            end = len(input) - 1
+        return end
 
     @staticmethod
     def crawl(query: str, pages_n: int = 1, 
@@ -99,34 +120,31 @@ class PubMed:
 
             # get content
             results: str = soup.find('pre').text
-            
-            results = results.split('\r\n\r\n') # why pubmed, why
-
-            for r in results:
-                last_index = 0
-
+            index = 0
+            loop = True
+            while loop:
+                END = PubMed.find_end(results, index)
+                if END == len(results) - 1: # we've reached the end
+                    loop = False
+                
                 publication = Publication()
 
-                publication.pmid, last_index = PubMed.parse_field(
-                    r, 'PMID', last_index)
+                publication.pmid, index = PubMed.parse_field(
+                    results, 'PMID', index)
 
-                publication.date, last_index = PubMed.parse_field(
-                    r, 'DP', last_index)
+                publication.date, index = PubMed.parse_field(
+                    results, 'DP', index)
                 
-                publication.title, last_index = PubMed.parse_field(
-                    r, 'TI', last_index)
+                publication.title, index = PubMed.parse_field(
+                    results, 'TI', index)
                 
-                publication.abstract, last_index = PubMed.parse_field(
-                    r, 'AB', last_index)
+                publication.abstract, index = PubMed.parse_field(
+                    results, 'AB', index)
                 
-                while True:
-                    authors_part, last_index = PubMed.parse_field(
-                        r, 'FAU', last_index)
-                    if last_index == -1:
-                        break
-                    publication.authors.append(authors_part)
-                
+                publication.authors, index = PubMed.parse_field_n(
+                    results, 'FAU', index, END)
+
                 publications.append(publication)
-                
+                index = END + 1
 
         return publications
