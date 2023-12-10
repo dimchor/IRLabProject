@@ -39,11 +39,11 @@ class Publication:
 
 class PubMed:
     class ResultsPerPage(enum.IntEnum):
-        ten = 10
-        twenty = 20
-        fifty = 50
-        onehundred = 100
-        twohundred = 200
+        TEN = 10
+        TWENTY = 20
+        FIFTY = 50
+        ONEHUNDRED = 100
+        TWOHUNDRED = 200
 
     @staticmethod
     def parse_field(input: str, field: str, start: int) -> (str, int):
@@ -88,7 +88,7 @@ class PubMed:
 
     @staticmethod
     def crawl(query: str, pages_n: int = 1, 
-              rpp: ResultsPerPage = ResultsPerPage.ten) -> list[Publication]:
+              rpp: ResultsPerPage = ResultsPerPage.TEN) -> list[Publication]:
         # check if the page number is valid, because pubmed may display up to 
         # 10'000 results
         LIMIT = 10000
