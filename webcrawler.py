@@ -62,7 +62,7 @@ class PubMed:
             ret += input[first_index:second_index]
             if second_index + NEW_LINE_LEN >= len(input) or \
                 input[second_index + NEW_LINE_LEN] != ' ':
-                return ret, second_index + NEW_LINE_LEN
+                return ret, second_index
             else:
                 first_index = second_index + NEW_LINE_LEN + OFFSET
 
