@@ -1,5 +1,5 @@
 import webcrawler
-import json
+from textprocessing import TextProcessing
 import time
 
 def get_sample_data():
@@ -19,11 +19,21 @@ def main():
 
     # process data
 
+    # TODO: improve JSON parsing 
     publications = webcrawler.Publication.import_publications(
         '/data/data-1702228931.json')
     
+    TextProcessing.download_dependencies()
     for publication in publications:
-        print(publication)
+        processed_abstract = []
+        tokens = TextProcessing.tokenize(publication.abstract.lower())
+        for token in tokens:
+            if TextProcessing.is_special(token) or \
+                TextProcessing.is_stopword(token):
+                continue
+            processed_abstract.append(TextProcessing.stem(token))
+
+        print(processed_abstract)
 
     pass
 
