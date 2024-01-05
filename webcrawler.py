@@ -36,7 +36,10 @@ class Publication:
         self.date = str()
     
     def __str__(self):
-        return f'{self.pmid}, {self.title}, {self.authors}, {self.abstract}, \
+        authors_str = str()
+        for author in self.authors:
+            authors_str += author + ' '
+        return f'{self.pmid} {self.title} {authors_str} {self.abstract} \
 {self.date}'
     
     @staticmethod
