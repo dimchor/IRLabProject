@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import enum
 import json
+import ijson
 
 class InvalidRequestException(Exception):
     def __init__(self, status_code):
@@ -40,27 +41,29 @@ class Publication:
     
     @staticmethod
     def export_publications(filename: str, data: list):
-        json_str = json.dumps([p.__dict__ for p in data])
-        f = open(filename, 'wt')
-        f.write(json_str)
-        f.close()
+        with open(filename, 'wt') as f:
+            f.write('[')
+            for i in range(len(data)):
+                f.write(json.dumps(data[i].__dict__))
+                if i < len(data) - 1:
+                    f.write(', ')
+            f.write(']')
 
     @staticmethod
     def import_publications(filename: str) -> list:
-        f = open(filename, 'rt')
-        json_str = f.read()
-        f.close()
-        json_list = json.loads(json_str)
         publications = []
-        for item in json_list:
-            publication = Publication()
-            publication.pmid = item['pmid']
-            publication.title = item['title']
-            publication.authors = item['authors']
-            publication.abstract = item['abstract']
-            publication.date = item['date']
-            publications.append(publication)
+        with open(filename, 'rt') as f:
+            content = ijson.items(f, 'item')
+            for item in content:
+                publication = Publication()
+                publication.pmid = item['pmid']
+                publication.title = item['title']
+                publication.authors = item['authors']
+                publication.abstract = item['abstract']
+                publication.date = item['date']
+                publications.append(publication)
         return publications
+
 
 class PubMed:
     class ResultsPerPage(enum.IntEnum):

@@ -21,8 +21,10 @@ def main():
 
     # TODO: improve JSON parsing 
     publications = webcrawler.Publication.import_publications(
-        '/data/data-1702228931.json')
+        '/data/data-1704454765.json')
     
+    pass
+
     TextProcessing.download_dependencies()
     for publication in publications:
         processed_abstract = []
