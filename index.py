@@ -13,6 +13,21 @@ class InvertedIndex:
     def __getitem__(self, index) -> nltk.text.Text:
         return self.__publications[index]
     
+    def contains(self, input: str) -> set[int]:
+        s = set()
+        for i in range(len(self.__publications)):
+            if input in self.__publications[i].tokens:
+                s.add(i)
+        return s
+    
+    def not_contains(self, input: str) -> set[int]:
+        s = set()
+        for i in range(len(self.__publications)):
+            if input not in self.__publications[i].tokens:
+                s.add(i)
+        return s
+
+    """
     def count(self, input: str) -> dict[int, int]:
         freq = {}
         for i in range(len(self.__publications)):
@@ -21,3 +36,4 @@ class InvertedIndex:
                 continue
             freq[i] = c
         return freq
+    """
