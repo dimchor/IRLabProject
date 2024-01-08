@@ -12,3 +12,12 @@ class InvertedIndex:
 
     def __getitem__(self, index) -> nltk.text.Text:
         return self.__publications[index]
+    
+    def count(self, input: str) -> dict[int, int]:
+        freq = {}
+        for i in range(len(self.__publications)):
+            c = self.__publications[i].count(input)
+            if c < 1:
+                continue
+            freq[i] = c
+        return freq

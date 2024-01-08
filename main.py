@@ -45,7 +45,7 @@ def main():
 
     inverted_index = InvertedIndex(processed_publications)
 
-    print(inverted_index[0].concordance_list('covid-19'))
+    print(inverted_index.count('covid-19'))
 
     pass
 
