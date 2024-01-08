@@ -46,6 +46,7 @@ def main():
     inverted_index = InvertedIndex(processed_publications)
 
     print(inverted_index.not_contains('covid'))
+    print(inverted_index.idf('covid'))
 
     pass
 

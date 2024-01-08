@@ -1,37 +1,38 @@
-import nltk
+from nltk.text import TextCollection, Text
 from webcrawler import Publication
 
-class InvertedIndex:
+class InvertedIndex(TextCollection):
     def __init__(self, publications: list[list[str]]):
-        self.__publications = []
+        text_publications = []
         for publication in publications:
-            self.__publications.append(nltk.text.Text(publication))
+            text_publications.append(Text(publication))
+        super().__init__(text_publications)
 
     def __len__(self):
-        return len(self.__publications)
+        return len(self._texts)
 
-    def __getitem__(self, index) -> nltk.text.Text:
-        return self.__publications[index]
+    def __getitem__(self, index) -> Text:
+        return self._texts[index]
     
     def contains(self, input: str) -> set[int]:
         s = set()
-        for i in range(len(self.__publications)):
-            if input in self.__publications[i].tokens:
+        for i in range(len(self)):
+            if input in self._texts[i].tokens:
                 s.add(i)
         return s
     
     def not_contains(self, input: str) -> set[int]:
         s = set()
-        for i in range(len(self.__publications)):
-            if input not in self.__publications[i].tokens:
+        for i in range(len(self)):
+            if input not in self._texts[i].tokens:
                 s.add(i)
         return s
 
     """
     def count(self, input: str) -> dict[int, int]:
         freq = {}
-        for i in range(len(self.__publications)):
-            c = self.__publications[i].count(input)
+        for i in range(len(self)):
+            c = super()._texts[i].count(input)
             if c < 1:
                 continue
             freq[i] = c
