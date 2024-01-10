@@ -1,2 +1,4 @@
 .git
 .gitignore
+/data
+/nltk_data

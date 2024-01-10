@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   backend:
-    build: ./backend
+    build: ./python
     volumes: 
-      - ./backend/data:/data:Z
-      - ./backend/nltk_data:/root/nltk_data:Z
+      - ./data:/data:Z
+      - ./nltk_data:/root/nltk_data:Z
