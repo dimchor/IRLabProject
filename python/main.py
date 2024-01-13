@@ -1,6 +1,7 @@
 import webcrawler
 from textprocessing import TextProcessing
 from index import InvertedIndex
+import boolean
 import time
 
 # temporary functions
@@ -36,6 +37,8 @@ def main():
     # process data
 
     # TODO: improve JSON parsing 
+
+    """
     publications = webcrawler.Publication.import_publications(
         '/data/data-1704454765.json')
 
@@ -47,6 +50,17 @@ def main():
 
     print(inverted_index.not_contains('covid'))
     print(inverted_index.idf('covid'))
+    """
+
+    lexer = boolean.Lexer(' \"string1\"& \'string2\' | \"invalid\" ')
+
+    tokens = None
+    try:
+        tokens = lexer.tokenize()
+        for token in tokens:
+            print(token)
+    except Exception as e:
+        print(e)
 
     pass
 
