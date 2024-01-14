@@ -52,11 +52,12 @@ def main():
     print(inverted_index.idf('covid'))
     """
 
-    lexer = boolean.Lexer(' \"string1\"& \'string2\' | \"invalid\" ')
+    lexer = boolean.Lexer(' ! "string"')
 
     tokens = None
     try:
         tokens = lexer.tokenize()
+        boolean.check_syntax(tokens)
         for token in tokens:
             print(token)
     except Exception as e:
