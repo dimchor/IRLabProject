@@ -28,6 +28,11 @@ def process_publications(
         processed_publications.append(processed_publication)
     return processed_publications
 
+def print_tokens(tokens: list[boolean.Token]) -> None:
+    for token in tokens:
+        print(token.value, end='')
+    print("")
+
 def main():
     
     # TODO: add proper input handling from a web server (flask)
@@ -52,14 +57,17 @@ def main():
     print(inverted_index.idf('covid'))
     """
 
-    lexer = boolean.Lexer(' ! "string"')
+    lexer = boolean.Lexer(' ! (("A" | "B" ) & !("C" | "D" ) | (!"F" & !"G")) & !("E")')
 
     tokens = None
     try:
         tokens = lexer.tokenize()
         boolean.check_syntax(tokens)
-        for token in tokens:
-            print(token)
+        print_tokens(tokens)
+        print("")
+        dm = boolean.DeMorgan(tokens)
+        tokens = dm.convert()
+        print_tokens(tokens)
     except Exception as e:
         print(e)
 

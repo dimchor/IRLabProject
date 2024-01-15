@@ -132,3 +132,118 @@ def check_syntax(tokens: list[Token]) -> None:
     if bracket_count > 0:
         raise Exception("Missing one or more \")\"")
         
+
+class DeMorgan:
+    def __init__(self, tokens: list[Token]):
+        self.__tokens = tokens
+        self.__it = 0
+    
+    def __this(self) -> Token:
+        return self.__tokens[self.__it]
+    
+    def __prev(self) -> Token:
+        return self.__tokens[self.__it - 1]
+
+    def __next(self) -> Token:
+        return self.__tokens[self.__it + 1]
+    
+    def __del_this(self) -> None:
+        del self.__tokens[self.__it]
+    
+    def __incr(self):
+        self.__it += 1
+
+    def __not_done(self) -> bool:
+        return self.__it < len(self.__tokens)
+    
+    def __apply(self):
+        del self.__tokens[self.__it - 1]
+        bracket_depth = 1
+        while bracket_depth > 0:
+            if self.__this().type == TokenType.NOT:
+                self.__del_this()
+                if self.__this().type == TokenType.LBRACKET:
+                    while self.__this().type != TokenType.RBRACKET:
+                        self.__incr()
+                    self.__incr()
+                else:
+                    self.__incr()
+            if self.__this().type == TokenType.OR:
+                self.__this().type = TokenType.AND
+                self.__this().value = '&'
+                self.__incr()
+            if self.__this().type == TokenType.STRING:
+                self.__tokens.insert(self.__it, Token(TokenType.NOT, '!'))
+                self.__it += 2
+            if self.__this().type == TokenType.LBRACKET:
+                bracket_depth += 1
+                self.__incr()
+            if self.__this().type == TokenType.RBRACKET:
+                bracket_depth -= 1
+                self.__incr()
+                continue
+            if self.__this().type == TokenType.AND:
+                if self.__prev().type == TokenType.RBRACKET:
+                    inner_it = self.__it - 3
+                    inner_bracket_depth = 1
+                    while inner_bracket_depth > 0:
+                        if self.__tokens[inner_it].type == TokenType.RBRACKET:
+                            inner_bracket_depth += 1
+                        if self.__tokens[inner_it].type == TokenType.LBRACKET:
+                            inner_bracket_depth -= 1
+                        inner_it -= 1
+                    self.__tokens.insert(
+                        inner_it, Token(TokenType.LBRACKET, '('))
+                    self.__incr()
+                else:
+                    inner_it = self.__it - 1
+                    if inner_it - 1 >= 0 and \
+                        self.__tokens[inner_it - 1].type == TokenType.NOT:
+                        inner_it -= 1
+                    self.__tokens.insert(
+                        inner_it, Token(TokenType.LBRACKET, '('))
+                    self.__incr()
+                if self.__next().type == TokenType.LBRACKET:
+                    inner_it = self.__it + 3
+                    inner_bracket_depth = 1
+                    while inner_bracket_depth > 0:
+                        if self.__tokens[inner_it].type == TokenType.LBRACKET:
+                            inner_bracket_depth += 1
+                        if self.__tokens[inner_it].type == TokenType.RBRACKET:
+                            inner_bracket_depth -= 1
+                        inner_it += 1
+                    self.__tokens.insert(
+                        inner_it + 1, Token(TokenType.RBRACKET, ')'))
+                else:
+                    inner_it = self.__it + 1
+                    if self.__tokens[inner_it].type == TokenType.NOT:
+                        inner_it += 1
+                    if self.__tokens[inner_it].type == TokenType.LBRACKET:
+                        inner_it += 1
+                        while self.__tokens[inner_it].type != \
+                            TokenType.RBRACKET:
+                            inner_it += 1
+                    else:
+                        inner_it += 1
+
+                    self.__tokens.insert(
+                        inner_it, Token(TokenType.RBRACKET, ')'))
+                self.__this().type = TokenType.OR
+                self.__this().value = '|'
+                bracket_depth += 1
+                self.__incr()
+
+    def convert(self) -> list[Token]:
+        last_not_index = -1
+        while self.__not_done():
+            if self.__this().type == TokenType.NOT:
+                last_not_index = self.__it
+                self.__incr()
+            if self.__this().type == TokenType.LBRACKET and \
+                last_not_index == self.__it - 1:
+
+                # apply DeMorgan
+                self.__apply()
+            self.__incr()
+        return self.__tokens
+
