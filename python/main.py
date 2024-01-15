@@ -43,9 +43,9 @@ def main():
 
     # TODO: improve JSON parsing 
 
-    """
+    
     publications = webcrawler.Publication.import_publications(
-        '/data/data-1704454765.json')
+        '../data/data-1704454765.json')
 
     TextProcessing.download_dependencies()
 
@@ -53,21 +53,27 @@ def main():
 
     inverted_index = InvertedIndex(processed_publications)
 
-    print(inverted_index.not_contains('covid'))
-    print(inverted_index.idf('covid'))
-    """
+    #print(inverted_index.contains('heart'))
+    #print(inverted_index.idf('covid'))
+    
 
-    lexer = boolean.Lexer(' ! (("A" | "B" ) & !("C" | "D" ) | (!"F" & !"G")) & !("E")')
+    lexer = boolean.Lexer('"covid-19" & ! ("heart" | "covid")')
 
     tokens = None
     try:
         tokens = lexer.tokenize()
         boolean.check_syntax(tokens)
-        print_tokens(tokens)
+        #print_tokens(tokens)
         print("")
         dm = boolean.DeMorgan(tokens)
         tokens = dm.convert()
-        print_tokens(tokens)
+        #print_tokens(tokens)
+
+        tokens = boolean.convert_to_sets(tokens, inverted_index)
+        eval = boolean.Evaluate(tokens)
+        results = eval.evaluate_infix()
+
+        print(results)
     except Exception as e:
         print(e)
 

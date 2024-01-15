@@ -1,4 +1,5 @@
 import enum
+from index import InvertedIndex
 
 def operator_or(lhs: set[int], rhs: set[int]) -> set[int]:
     return lhs.union(rhs)
@@ -17,7 +18,7 @@ class TokenType(enum.IntEnum):
 class Token:
     def __init__(self, token_type: TokenType, value):
         self.type = token_type
-        self.value = value
+        self.value: any = value
 
     def __str__(self) -> str:
         return f'[{self.type}, {self.value}]'
@@ -247,3 +248,57 @@ class DeMorgan:
             self.__incr()
         return self.__tokens
 
+def convert_to_sets(tokens: list[Token], index: InvertedIndex) -> list[Token]:
+    it = 0
+    while it < len(tokens):
+        if tokens[it].type == TokenType.NOT:
+            del tokens[it]
+            tokens[it].value = set(index.not_contains(tokens[it].value))
+        elif tokens[it].type == TokenType.STRING:
+            tokens[it].value = set(index.contains(tokens[it].value))
+        it += 1
+    return tokens
+
+class Evaluate:
+    def __init__(self, tokens: list[Token]):
+        self.__tokens = tokens
+        self.__operands = []
+        self.__operators = []
+
+    def __process(self):
+        operator = self.__operators.pop()
+
+        match operator.type:
+            case TokenType.AND:
+                operator_rhs = self.__operands.pop()
+                operator_lhs = self.__operands.pop()
+                self.__operands.append(operator_and(operator_rhs, operator_lhs))
+            case TokenType.OR:
+                operator_rhs = self.__operands.pop()
+                operator_lhs = self.__operands.pop()
+                self.__operands.append(operator_or(operator_rhs, operator_lhs))
+            case _:
+                pass
+
+    def evaluate_infix(self) -> set[int]:
+
+        for token in self.__tokens:
+            match token.type:
+                case TokenType.STRING:
+                    self.__operands.append(token.value)
+                case TokenType.LBRACKET:
+                    self.__operators.append(token.type)
+                case TokenType.RBRACKET:
+                    if self.__operators[-1].type != TokenType.LBRACKET:
+                        self.__process()
+                    self.__operators.pop()
+                case _:
+                    while len(self.__operators) > 0 and \
+                        self.__operators[-1] <= token.type:
+                        self.__process()
+                    self.__operators.append(token)
+        
+        while len(self.__operators) > 0:
+            self.__process()
+
+        return self.__operands[-1]
