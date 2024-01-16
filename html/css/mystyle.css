@@ -1,6 +1,6 @@
 .card-title {
     text-align: center;
-    color:#212121
+    color:#efefef;
 }
 
 .block {
@@ -8,4 +8,17 @@
     display: block;
     flex-direction: column;
     margin-bottom: 50px;
- }
+}
+
+.monospaced {
+    font-family: 'Space Mono', monospace;
+}
+
+textarea:focus, input:focus {
+    color: #ffffff;
+}
+
+::placeholder {
+    color: #4c857b;
+    opacity: 1; /* Firefox */
+  }
