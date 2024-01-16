@@ -1,0 +1,11 @@
+.card-title {
+    text-align: center;
+    color:#212121
+}
+
+.block {
+    position: relative;
+    display: block;
+    flex-direction: column;
+    margin-bottom: 50px;
+ }

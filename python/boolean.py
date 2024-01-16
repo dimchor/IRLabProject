@@ -305,3 +305,12 @@ class Evaluate:
             self.__process()
 
         return self.__operands[-1].value
+    
+def search(query: str, index: InvertedIndex) -> set[int]:
+    tokens = Lexer(query).tokenize()
+    check_syntax(tokens)
+
+    tokens = DeMorgan(tokens).convert()
+
+    tokens = convert_to_sets(tokens, index)
+    return Evaluate(tokens).evaluate_infix()

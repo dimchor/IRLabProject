@@ -56,26 +56,13 @@ def main():
     #print(inverted_index.contains('heart'))
     #print(inverted_index.idf('covid'))
     
+    query = '"covid-19" & ! ("heart" | "covid")'
+    #test = '!("A" | ("B" & !"C")) & "D" | !("F" & ("H" | !"G"))'
+    try:
+        print(boolean.search(query, inverted_index))
 
-    lexer = boolean.Lexer('"covid-19" & ! ("heart" | "covid") & !"lung"')
-
-    tokens = None
-    #try:
-    tokens = lexer.tokenize()
-    boolean.check_syntax(tokens)
-    #print_tokens(tokens)
-    print("")
-    dm = boolean.DeMorgan(tokens)
-    tokens = dm.convert()
-    print_tokens(tokens)
-
-    tokens = boolean.convert_to_sets(tokens, inverted_index)
-    eval = boolean.Evaluate(tokens)
-    results = eval.evaluate_infix()
-
-    print(results)
-    #except Exception as e:
-    #    print(e)
+    except Exception as e:
+        print(e)
 
     pass
 
