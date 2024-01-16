@@ -185,7 +185,7 @@ class DeMorgan:
                 continue
             if self.__this().type == TokenType.AND:
                 if self.__prev().type == TokenType.RBRACKET:
-                    inner_it = self.__it - 3
+                    inner_it = self.__it - 2
                     inner_bracket_depth = 1
                     while inner_bracket_depth > 0:
                         if self.__tokens[inner_it].type == TokenType.RBRACKET:
@@ -205,7 +205,7 @@ class DeMorgan:
                         inner_it, Token(TokenType.LBRACKET, '('))
                     self.__incr()
                 if self.__next().type == TokenType.LBRACKET:
-                    inner_it = self.__it + 3
+                    inner_it = self.__it + 2
                     inner_bracket_depth = 1
                     while inner_bracket_depth > 0:
                         if self.__tokens[inner_it].type == TokenType.LBRACKET:
