@@ -245,6 +245,7 @@ class DeMorgan:
 
                 # apply DeMorgan
                 self.__apply()
+                continue
             self.__incr()
         return self.__tokens
 
@@ -268,15 +269,17 @@ class Evaluate:
     def __process(self):
         operator = self.__operators.pop()
 
-        match operator.type:
-            case TokenType.AND:
-                operator_rhs = self.__operands.pop()
-                operator_lhs = self.__operands.pop()
-                self.__operands.append(operator_and(operator_rhs, operator_lhs))
-            case TokenType.OR:
-                operator_rhs = self.__operands.pop()
-                operator_lhs = self.__operands.pop()
-                self.__operands.append(operator_or(operator_rhs, operator_lhs))
+        match operator.value:
+            case '&':
+                operand_rhs = self.__operands.pop().value
+                operand_lhs = self.__operands.pop().value
+                self.__operands.append(Token(
+                    TokenType.STRING, operator_and(operand_rhs, operand_lhs)))
+            case '|':
+                operand_rhs = self.__operands.pop().value
+                operand_lhs = self.__operands.pop().value
+                self.__operands.append(Token(
+                    TokenType.STRING, operator_or(operand_rhs, operand_lhs)))
             case _:
                 pass
 
@@ -285,20 +288,20 @@ class Evaluate:
         for token in self.__tokens:
             match token.type:
                 case TokenType.STRING:
-                    self.__operands.append(token.value)
+                    self.__operands.append(token)
                 case TokenType.LBRACKET:
-                    self.__operators.append(token.type)
+                    self.__operators.append(token)
                 case TokenType.RBRACKET:
                     if self.__operators[-1].type != TokenType.LBRACKET:
                         self.__process()
                     self.__operators.pop()
                 case _:
                     while len(self.__operators) > 0 and \
-                        self.__operators[-1] <= token.type:
+                        self.__operators[-1].type <= token.type:
                         self.__process()
                     self.__operators.append(token)
         
         while len(self.__operators) > 0:
             self.__process()
 
-        return self.__operands[-1]
+        return self.__operands[-1].value
