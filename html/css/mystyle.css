@@ -8,6 +8,7 @@
     display: block;
     flex-direction: column;
     margin-bottom: 50px;
+    overflow: auto;
 }
 
 .monospaced {
@@ -15,10 +16,18 @@
 }
 
 textarea:focus, input:focus {
-    color: #ffffff;
+    color: #84ecd7;
 }
 
 ::placeholder {
     color: #4c857b;
     opacity: 1; /* Firefox */
-  }
+}
+
+select {
+    margin-bottom: 10px;
+}
+
+label {
+    color:#efefef;
+}

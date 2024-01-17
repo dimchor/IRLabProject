@@ -12,17 +12,17 @@
         <header class="bg--black container" style="box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.08), 0 2px 4px 0 rgba(0, 0, 0, 0.12);">
             <h1 class="m--1 g--6 color--paper">PubMed Search</h1>
         </header>
-        <div class="center" style="width: 100%;">
+        <div id="content" class="center" style="width: 100%;">
 
             <div class="block center card bg--black g--6">
                 <h3 class="card-title">Pull publications</h3>
                 <div class="container center">
                     <div class="container center">
                         <div class="m--1">
-                            <input type="text" required placeholder="Query"/>
+                            <input class="monospaced" type="text" id="pubmed-pull" required placeholder="Query"/>
                         </div>
                         <div class="m--1">
-                            <button class="btn--raised btn--primary">Pull</button>
+                            <button class="btn--raised btn--primary" onclick="pubmedPull()">Pull</button>
                         </div>
                     </div>
                 </div>
@@ -33,10 +33,24 @@
                 <div class="container center">
                     <div class="container center">
                         <div class="m--1">
+                            <select id="select-dataset">
+                            </select>
+                            <br>
+                            <select id="select-search">
+                                <option value="boolean">Boolean</option>
+                                <option value="vector">Vector Space Model</option>
+                                <option value="okapi">Okapi BM25</option>
+                            </select>
+                            <br>
+                            <div class="container">
+                                <input type="radio" id="choice-stem" name="text-proc" value="stem"/>
+                                <label for="choice-stem">Stemming</label>
+                                
+                                <input type="radio" id="choice-lem" name="text-proc" value="lem"/>
+                                <label for="choice-lem">Lemmatization</label>
+                            </div>
                             <input class="monospaced" type="text" required placeholder="Query"/>
-                        </div>
-                        <div class="m--1">
-                            <button class="btn--raised btn--primary">Pull</button>
+                            <button onclick="pubmedSearch()" class="btn--raised btn--primary">Search</button>
                         </div>
                     </div>
                 </div>
@@ -44,5 +58,49 @@
 
             
         </div>
+        <script>
+            function pubmedPull() {
+                // post query
+                alert(document.getElementById("pubmed-pull").value);
+
+                location.reload();
+                return false;
+            }
+        </script>
+        <script>
+            function pubmedSearch() {
+                var contentDiv = document.getElementById("content");
+                var resultsDiv = document.getElementById("results");
+                if (resultsDiv == null) {
+                    resultsDiv = document.createElement("div");
+                    resultsDiv.setAttribute("id", "results")
+                    resultsDiv.classList.add("block","center", "card", "bg--black", "g--6");
+
+                    var titleHeader = document.createElement("h3");
+                    titleHeader.classList.add("card-title");
+                    titleHeader.innerText = "Results";
+                    resultsDiv.appendChild(titleHeader);
+
+                    contentDiv.appendChild(resultsDiv);
+                }
+                
+                // list get results
+
+                return true;
+            }
+        </script>
+        <script>
+            var datasetSelect = document.getElementById("select-dataset");
+
+            // get dataset list
+            const array = ["data1", "data2"];
+
+            for (var i = 0; i < array.length; i++) {
+                var option = document.createElement("option");
+                option.setAttribute("value", array[i]);
+                option.text = array[i];
+                datasetSelect.appendChild(option);
+            }
+        </script>
     </body>
 </html>
