@@ -19,10 +19,10 @@
                 <div class="container center">
                     <div class="container center">
                         <div class="m--1">
-                            <input class="monospaced" type="text" id="pubmed-pull" required placeholder="Query"/>
+                            <input class="monospaced" type="text" id="pubmed-pull" placeholder="Query"/>
                         </div>
                         <div class="m--1">
-                            <button class="btn--raised btn--primary" onclick="pubmedPull()">Pull</button>
+                            <button id="pull-query" class="btn--raised btn--primary" onclick="pubmedPull()">Pull</button>
                         </div>
                     </div>
                 </div>
@@ -42,14 +42,22 @@
                                 <option value="okapi">Okapi BM25</option>
                             </select>
                             <br>
+                            <select id="select-fields">
+                                <option value="all">All</option>
+                                <option value="title">Title</option>
+                                <option value="authors">Authors</option>
+                                <option value="abstract">Abstract</option>
+                                <option value="date">Date</option>
+                            </select>
+                            <br>
                             <div class="container">
-                                <input type="radio" id="choice-stem" name="text-proc" value="stem"/>
+                                <input type="radio" id="choice-stem" name="text-proc" value="stem" checked="checked" />
                                 <label for="choice-stem">Stemming</label>
                                 
                                 <input type="radio" id="choice-lem" name="text-proc" value="lem"/>
                                 <label for="choice-lem">Lemmatization</label>
                             </div>
-                            <input class="monospaced" type="text" required placeholder="Query"/>
+                            <input id="search-query" class="monospaced" type="text" placeholder="Query"/>
                             <button onclick="pubmedSearch()" class="btn--raised btn--primary">Search</button>
                         </div>
                     </div>
@@ -60,6 +68,10 @@
         </div>
         <script>
             function pubmedPull() {
+                if (document.getElementById("pull-query").value == "") {
+                    return true;
+                }
+
                 // post query
                 alert(document.getElementById("pubmed-pull").value);
 
@@ -69,6 +81,10 @@
         </script>
         <script>
             function pubmedSearch() {
+                if (document.getElementById("search-query").value == "") {
+                    return true;
+                }
+
                 var contentDiv = document.getElementById("content");
                 var resultsDiv = document.getElementById("results");
                 if (resultsDiv == null) {
