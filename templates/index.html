@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="css/surface_styles.css" rel="stylesheet"/>
-        <link href="css/mystyle.css" rel="stylesheet"/>
+        <link href="/static/surface_styles.css" rel="stylesheet"/>
+        <link href="/static/mystyle.css" rel="stylesheet"/>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,14 +67,24 @@
             
         </div>
         <script>
-            function pubmedPull() {
-                if (document.getElementById("pull-query").value == "") {
+            async function pubmedPull() {
+                if (document.getElementById("pubmed-pull").value == "") {
+                    alert("Please, fill-in the pull field.");
                     return true;
                 }
+                document.getElementById("pull-query").disabled = true;
+                
+                
+                const query = document.getElementById("pubmed-pull").value;
+                const filename = "data-" + Date.now();
+                const url = "http://localhost:5000/get_data/" + query + "/" + filename;
 
-                // post query
-                alert(document.getElementById("pubmed-pull").value);
+                await fetch(url)
+                    .then((response) => response.json())
+                    .then((json) => console.log(json));
 
+                // add option to list and don't reload
+                
                 location.reload();
                 return false;
             }
@@ -82,6 +92,7 @@
         <script>
             function pubmedSearch() {
                 if (document.getElementById("search-query").value == "") {
+                    alert("Please, fill-in the search field.");
                     return true;
                 }
 

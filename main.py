@@ -3,6 +3,12 @@ from textprocessing import TextProcessing
 from index import InvertedIndex
 import boolean
 import time
+from flask import Flask, render_template, jsonify
+from flask_cors import CORS
+import logic
+
+app = Flask(__name__)
+CORS(app)
 
 # temporary functions
 
@@ -10,7 +16,7 @@ def get_sample_data():
     try:
         publications = webcrawler.PubMed.crawl('covid')
         webcrawler.Publication.export_publications(
-            f'/data/data-{int(time.time())}.json', publications)
+            f'data/data-{int(time.time())}.json', publications)
     except webcrawler.InvalidRequestException as e:
         print(e)
 
@@ -33,7 +39,7 @@ def print_tokens(tokens: list[boolean.Token]) -> None:
         print(token.value, end='')
     print("")
 
-def main():
+def test():
     
     # TODO: add proper input handling from a web server (flask)
 
@@ -45,9 +51,8 @@ def main():
 
     
     publications = webcrawler.Publication.import_publications(
-        '../data/data-1704454765.json')
+        'data/data-1704454765.json')
 
-    TextProcessing.download_dependencies()
 
     processed_publications = process_publications(publications)
 
@@ -66,6 +71,21 @@ def main():
 
     pass
 
+@app.route('/get_data/<query>/<filename>', methods=['GET'])
+def get_data(query: str, filename: str) -> dict:
+    try:
+        logic.get_data(query, filename)
+        return {"success": filename}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+def main():
+    TextProcessing.download_dependencies()
+    app.run(debug=True)
 
 if __name__ == "__main__":
     main()
