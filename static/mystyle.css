@@ -15,7 +15,7 @@
     font-family: 'Space Mono', monospace;
 }
 
-textarea:focus, input:focus {
+input[type=text]:focus {
     color: #84ecd7;
 }
 
@@ -25,11 +25,26 @@ textarea:focus, input:focus {
 }
 
 select {
-    margin-bottom: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 label {
     color:#efefef;
+}
+
+button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+input {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+input[type=number]:focus {
+    color:#212121;
 }
 
 button:disabled,

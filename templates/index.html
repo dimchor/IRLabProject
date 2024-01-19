@@ -17,8 +17,21 @@
             <div class="block center card bg--black g--6">
                 <h3 class="card-title">Pull publications</h3>
                 <div class="container center">
+                    <div class="center">
+                        <label for="pages">Number of pages:</label>
+                            <input id="pages" class="monospaced" type="number" placeholder="Number of pages" value="1"/>
+                            <br>
+                            <label for="results-per-page">Results per page:</label>
+                            <select id="results-per-page">
+                                <option value="10">10 (ten)</option>
+                                <option value="20">20 (twenty)</option>
+                                <option value="50">50 (fifty)</option>
+                                <option value="100">100 (one-hundred)</option>
+                                <option value="200">200 (two-hundred)</option>
+                            </select>
+                    </div>
                     <div class="container center">
-                        <div class="m--1">
+                        <div>
                             <input class="monospaced" type="text" id="pubmed-pull" placeholder="Query"/>
                         </div>
                         <div class="m--1">
@@ -33,33 +46,46 @@
                 <div class="container center">
                     <div class="container center">
                         <div class="m--1">
+                            <label for="select-dataset">Dataset:</label>
                             <select id="select-dataset">
                             </select>
                             <br>
+                            <label for="select-search">Algorithm:</label>
                             <select id="select-search">
                                 <option value="boolean">Boolean</option>
                                 <option value="vector">Vector Space Model</option>
                                 <option value="okapi">Okapi BM25</option>
                             </select>
                             <br>
+                            <div class="container">
+                                <input type="radio" id="choice-stem" name="text-proc" value="stem" checked="checked" />
+                                <label for="choice-stem">Stemming</label>
+                                <input type="radio" id="choice-lem" name="text-proc" value="lem"/>
+                                <label for="choice-lem">Lemmatization</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container center">
+                        <div class="m--1">
+                            <label for="select-fields">Search in:</label>
                             <select id="select-fields">
-                                <option value="all">All</option>
+                                <option value="all">Everything</option>
                                 <option value="title">Title</option>
                                 <option value="authors">Authors</option>
                                 <option value="abstract">Abstract</option>
                                 <option value="date">Date</option>
                             </select>
                             <br>
-                            <div class="container">
-                                <input type="radio" id="choice-stem" name="text-proc" value="stem" checked="checked" />
-                                <label for="choice-stem">Stemming</label>
-                                
-                                <input type="radio" id="choice-lem" name="text-proc" value="lem"/>
-                                <label for="choice-lem">Lemmatization</label>
+                            <div class="container center">
+                                <div>
+                                    <input id="search-query" class="monospaced" type="text" placeholder="Query"/>
+                                </div>
+                                <div class="m--1">
+                                    <button onclick="pubmedSearch()" class="btn--raised btn--primary">Search</button>
+                                </div>
                             </div>
-                            <input id="search-query" class="monospaced" type="text" placeholder="Query"/>
-                            <button onclick="pubmedSearch()" class="btn--raised btn--primary">Search</button>
                         </div>
+                        
                     </div>
                 </div>
             </div>
