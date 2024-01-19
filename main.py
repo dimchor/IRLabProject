@@ -6,6 +6,7 @@ import time
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 import logic
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -96,6 +97,12 @@ def get_data(query: str, filename: str, pages: str, rpp: str) -> dict:
         return {"success": filename}
     except Exception as e:
         return {"error": str(e)}
+
+@app.route('/get_files', methods=['GET'])
+def get_files():
+    PATH = 'data'
+    files = [file for file in os.listdir(PATH) if os.path.isfile(PATH + file)]
+    return jsonify(files)
 
 @app.route('/')
 def index():
