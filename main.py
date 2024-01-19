@@ -71,10 +71,28 @@ def test():
 
     pass
 
-@app.route('/get_data/<query>/<filename>', methods=['GET'])
-def get_data(query: str, filename: str) -> dict:
+@app.route('/get_data/<query>/<filename>/<pages>/<rpp>', methods=['GET'])
+def get_data(query: str, filename: str, pages: str, rpp: str) -> dict:
+    rpp_enum = None
+    match rpp:
+        case '10':
+            rpp_enum = webcrawler.PubMed.ResultsPerPage.TEN
+        case '20':
+            rpp_enum = webcrawler.PubMed.ResultsPerPage.TWENTY
+        case '50':
+            rpp_enum = webcrawler.PubMed.ResultsPerPage.FIFTY
+        case '100':
+            rpp_enum = webcrawler.PubMed.ResultsPerPage.ONEHUNDRED
+        case '200':
+            rpp_enum = webcrawler.PubMed.ResultsPerPage.TWOHUNDRED
+        case _:
+            pass
     try:
-        logic.get_data(query, filename)
+        pages_n = int(pages)
+        if pages_n < 1:
+            raise Exception('Invalid page number (it must be >= 1)')
+                
+        logic.get_data(query, filename, int(pages), rpp_enum)
         return {"success": filename}
     except Exception as e:
         return {"error": str(e)}

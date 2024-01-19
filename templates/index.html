@@ -103,7 +103,9 @@
                 
                 const query = document.getElementById("pubmed-pull").value;
                 const filename = "data-" + Date.now();
-                const url = "http://localhost:5000/get_data/" + query + "/" + filename;
+                const pages = document.getElementById("pages").value;
+                const results_per_page = document.getElementById("results-per-page").value;
+                const url = "/get_data/" + query + "/" + filename + "/" + pages + "/" + results_per_page;
 
                 await fetch(url)
                     .then((response) => response.json())
