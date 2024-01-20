@@ -436,5 +436,8 @@ def search(query: str, index: InvertedIndex, process_token) -> set[int]:
 
     tokens = Normalizer(tokens).apply(process_token)
 
+    if len(tokens) == 0:
+        raise Exception('Invalid input.')
+
     tokens = convert_to_sets(tokens, index)
     return Evaluate(tokens).evaluate_infix()
