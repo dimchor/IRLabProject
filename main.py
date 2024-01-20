@@ -177,7 +177,8 @@ def search(dataset: str, algorithm: str, textproc: str, where: str, query: str):
     selected_publications = []
     for i in range(len(publications)):
         if i in publication_set:
-            publications[i].abstract = publications[i].abstract[0:240] + ' [...]'
+            publications[i].abstract = publications[i].abstract[0:240] + \
+                ' [...]'
             selected_publications.append(publications[i])
     
     json_str = '['
