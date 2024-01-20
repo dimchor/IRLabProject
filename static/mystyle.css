@@ -52,3 +52,24 @@ button[disabled]{
   background-color: #cccccc;
   color: #666666;
 }
+
+a:link {
+    color:#efefef;
+}
+
+a:visited {
+    color:#efefef;
+}
+
+a:hover {
+    color:#212121;
+}
+
+
+p {
+    color:#efefef;
+}
+
+.subtitle {
+    margin-bottom: 0px;
+}

@@ -96,37 +96,49 @@
             async function pubmedPull() {
                 if (document.getElementById("pubmed-pull").value == "") {
                     alert("Please, fill-in the pull field.");
-                    return true;
+                    return;
                 }
                 document.getElementById("pull-query").disabled = true;
                 
-                
                 const query = document.getElementById("pubmed-pull").value;
-                const filename = "data-" + Date.now();
+                const filename = "d" + Date.now();
                 const pages = document.getElementById("pages").value;
                 const results_per_page = document.getElementById("results-per-page").value;
                 const url = "/get_data/" + query + "/" + filename + "/" + pages + "/" + results_per_page;
-
                 await fetch(url)
                     .then((response) => response.json())
-                    .then((json) => console.log(json));
+                    .then((json) => {
+                        if ("error" in json) {
+                            alert(json["error"]);
+                            return;
+                        }
 
-                // add option to list and don't reload
-                
-                location.reload();
-                return false;
+                        var datasetSelect = document.getElementById("select-dataset");
+                        var option = document.createElement("option");
+                        option.setAttribute("value", json["success"]);
+                        option.text = json["success"];
+                        datasetSelect.appendChild(option);
+                    });
+
+                document.getElementById("pull-query").disabled = false;
             }
         </script>
         <script>
-            function pubmedSearch() {
+            async function pubmedSearch() {
                 if (document.getElementById("search-query").value == "") {
                     alert("Please, fill-in the search field.");
-                    return true;
+                    return;
                 }
 
-                var contentDiv = document.getElementById("content");
+                if (document.getElementById("select-dataset").length  < 1) {
+                    alert("There's no data to work with. Please, pull publications first.");
+                    return;
+                }
+
                 var resultsDiv = document.getElementById("results");
                 if (resultsDiv == null) {
+                    var contentDiv = document.getElementById("content");
+                    
                     resultsDiv = document.createElement("div");
                     resultsDiv.setAttribute("id", "results")
                     resultsDiv.classList.add("block","center", "card", "bg--black", "g--6");
@@ -137,25 +149,76 @@
                     resultsDiv.appendChild(titleHeader);
 
                     contentDiv.appendChild(resultsDiv);
-                }
-                
-                // list get results
 
-                return true;
+                    var resultsList = document.createElement("div");
+                    resultsList.setAttribute("id", "results-list");
+                    resultsList.classList.add("m--1");
+
+                    resultsDiv.appendChild(resultsList);
+                }
+
+                var resultsList = document.getElementById("results-list");
+                resultsList.innerHTML = "";
+
+                const dataset = document.getElementById("select-dataset").value;
+                const algorithm = document.getElementById("select-search").value;
+                const textproc = document.querySelector('input[name="text-proc"]:checked').value
+                const where = document.getElementById("select-fields").value;
+                const query = document.getElementById("search-query").value;
+                const url = "/search/" + dataset + "/" + algorithm + "/" + textproc + "/" + where + "/" + query
+                await fetch(url)
+                    .then((response) => response.json())
+                    .then((json) => {
+                        if ("error" in json) {
+                            alert("Search query error: " + json["error"]);
+                            return;
+                        }
+
+                        const pubmed_link = "https://pubmed.ncbi.nlm.nih.gov/";
+
+                        for (var i = 0; i < json.length; i++) {
+                            const pmid = json[i]["pmid"];
+                            const title = json[i]["title"];
+                            const abstract = json[i]["abstract"];
+                            const date = json[i]["date"];
+                            const authors = json[i]["authors"].toString();
+
+                            var result = document.createElement("div");
+                            var link = document.createElement("a");
+                            link.href = pubmed_link + pmid;
+                            link.text = title;
+                            
+                            var details = document.createElement("p");
+                            details.classList.add("subtitle");
+                            details.innerHTML = "PMID: " + pmid + "; Date: " + date + "; Authors: " + authors
+
+                            var overview = document.createElement("p");
+                            overview.innerHTML = abstract;
+
+                            result.appendChild(link);
+                            result.appendChild(details);
+                            result.appendChild(overview);
+                            resultsList.appendChild(result);
+                        }
+                    });
+
+                return;
             }
         </script>
         <script>
             var datasetSelect = document.getElementById("select-dataset");
 
-            // get dataset list
-            const array = ["data1", "data2"];
-
-            for (var i = 0; i < array.length; i++) {
-                var option = document.createElement("option");
-                option.setAttribute("value", array[i]);
-                option.text = array[i];
-                datasetSelect.appendChild(option);
-            }
+            const url = "/get_files";
+            fetch(url)
+                .then((response) => response.json())
+                .then((json) => {
+                    for (var i = 0; i < json.length; i++) {
+                        var option = document.createElement("option");
+                        option.setAttribute("value", json[i]);
+                        option.text = json[i];
+                        datasetSelect.appendChild(option);
+                    }
+                });
         </script>
     </body>
 </html>

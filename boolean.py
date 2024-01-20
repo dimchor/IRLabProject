@@ -1,5 +1,6 @@
 import enum
 from index import InvertedIndex
+from textprocessing import TextProcessing
 
 def operator_or(lhs: set[int], rhs: set[int]) -> set[int]:
     return lhs.union(rhs)
@@ -235,7 +236,7 @@ class DeMorgan:
                 self.__incr()
 
     def convert(self) -> list[Token]:
-        last_not_index = -1
+        last_not_index = -2
         while self.__not_done():
             if self.__this().type == TokenType.NOT:
                 last_not_index = self.__it
@@ -305,12 +306,135 @@ class Evaluate:
             self.__process()
 
         return self.__operands[-1].value
+
+class Normalizer:
+    def __init__(self, tokens: list[Token]):
+        self.__tokens = tokens
+        self.__it = 0
     
-def search(query: str, index: InvertedIndex) -> set[int]:
+    def __this(self) -> Token:
+        return self.__tokens[self.__it]
+    
+    def __prev(self) -> Token:
+        return self.__tokens[self.__it - 1]
+
+    def __next(self) -> Token:
+        return self.__tokens[self.__it + 1]
+    
+    def __del_this(self) -> None:
+        del self.__tokens[self.__it]
+    
+    def __incr(self):
+        self.__it += 1
+
+    def __decr(self):
+        self.__it -= 1
+    
+    def __len__(self) -> int:
+        return len(self.__tokens)
+
+    def __not_done(self) -> bool:
+        return self.__it < len(self)
+    
+    def __remove_prev(self) -> bool:
+        if self.__it - 1 < 0:
+            return False
+        match self.__prev().type:
+            case TokenType.AND | TokenType.OR:
+                self.__decr()
+                self.__del_this()
+            case TokenType.NOT:
+                self.__decr()
+                self.__del_this()
+                return self.__remove_prev()
+            case _:
+                return False
+        return True
+
+    def __remove_empty_string(self):
+        # remove previous tokens 
+        removed = self.__remove_prev()
+        # remove the empty string token
+        self.__del_this()
+        if len(self) == 0 or self.__it >= len(self):
+            return
+
+        # remove next tokens
+        if not removed:
+            match self.__this().type:
+                case TokenType.AND | TokenType.OR:
+                    self.__del_this()
+                case _:
+                    pass
+     
+    def apply(self, process_token) -> list[Token]:
+        while self.__not_done():
+            if self.__this().type != TokenType.STRING:
+                self.__incr()
+                continue
+
+            if len(self.__this().value) == 0:
+                self.__remove_empty_string()
+                continue
+
+            tokens = TextProcessing.tokenize(self.__this().value.lower())
+            processed_tokens = []
+            for token in tokens:
+                if TextProcessing.is_special(token) or \
+                    TextProcessing.is_stopword(token):
+                    continue
+                processed_tokens.append(process_token(token))
+
+            if len(processed_tokens) > 1:
+                self.__del_this()
+                if self.__it - 1 >= 0 and self.__prev().type == TokenType.NOT:
+                    self.__decr()
+                    self.__del_this()
+                    self.__tokens.insert(self.__it, Token(TokenType.LBRACKET, 
+                                                          '('))
+                    self.__incr()
+                    for i in range(len(processed_tokens)):
+                        self.__tokens.insert(self.__it, Token(TokenType.NOT, 
+                                                              '!'))
+                        self.__incr()
+                        self.__tokens.insert(self.__it, Token(
+                            TokenType.STRING, processed_tokens[i]))
+                        self.__incr()
+                        if i < len(processed_tokens) - 1:
+                            self.__tokens.insert(self.__it, Token(TokenType.OR, 
+                                                              '|'))
+                            self.__incr()
+                    self.__tokens.insert(self.__it, Token(TokenType.RBRACKET, 
+                                                          ')'))
+                    self.__incr()
+                    continue
+
+                self.__tokens.insert(self.__it, Token(TokenType.LBRACKET, '('))
+                self.__incr()
+                for i in range(len(processed_tokens)):
+                    self.__tokens.insert(self.__it, Token(TokenType.STRING, 
+                                                          processed_tokens[i]))
+                    self.__incr()
+                    if i < len(processed_tokens) - 1:
+                        self.__tokens.insert(self.__it, Token(TokenType.AND, 
+                                                              '&'))
+                        self.__incr()
+                self.__tokens.insert(self.__it, Token(TokenType.RBRACKET, ')'))
+                self.__incr()
+            elif len(processed_tokens) == 1:
+                self.__this().value = processed_tokens[0]
+                self.__incr()
+            else:
+                self.__remove_empty_string()
+        return self.__tokens
+
+def search(query: str, index: InvertedIndex, process_token) -> set[int]:
     tokens = Lexer(query).tokenize()
     check_syntax(tokens)
 
     tokens = DeMorgan(tokens).convert()
+
+    tokens = Normalizer(tokens).apply(process_token)
 
     tokens = convert_to_sets(tokens, index)
     return Evaluate(tokens).evaluate_infix()
