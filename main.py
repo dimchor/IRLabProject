@@ -14,8 +14,9 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-# temporary functions
-
+#####################
+# testing functions #
+#####################
 def get_sample_data():
     try:
         publications = webcrawler.PubMed.crawl('covid')
@@ -90,6 +91,10 @@ def test2():
 
     print(VectorSpaceModel.search(inverted_index, 'overview covid-19', TextProcessing.stem))
 
+################
+# working code #
+################
+    
 @app.route('/get_data/<query>/<filename>/<pages>/<rpp>', methods=['GET'])
 def get_data(query: str, filename: str, pages: str, rpp: str) -> dict:
     rpp_enum = None
@@ -194,7 +199,6 @@ def index():
 def main():
     TextProcessing.download_dependencies()
     app.run(debug=True)
-    #test2()
 
 if __name__ == "__main__":
     main()
