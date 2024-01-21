@@ -27,14 +27,3 @@ class InvertedIndex(TextCollection):
             if input not in self._texts[i].tokens:
                 s.add(i)
         return s
-
-    """
-    def count(self, input: str) -> dict[int, int]:
-        freq = {}
-        for i in range(len(self)):
-            c = super()._texts[i].count(input)
-            if c < 1:
-                continue
-            freq[i] = c
-        return freq
-    """

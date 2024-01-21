@@ -31,3 +31,14 @@ class TextProcessing:
     def is_stopword(input: str) -> bool:
         stopwords = nltk.corpus.stopwords.words('english')
         return True if input in stopwords else False
+    
+    @staticmethod
+    def process(query: str, process_token) -> list[str]:
+        tokens = TextProcessing.tokenize(query.lower())
+        processed_tokens = []
+        for token in tokens:
+            if TextProcessing.is_special(token) or \
+                TextProcessing.is_stopword(token):
+                continue
+            processed_tokens.append(process_token(token))
+        return processed_tokens

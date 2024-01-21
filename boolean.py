@@ -307,7 +307,7 @@ class Evaluate:
 
         return self.__operands[-1].value
 
-class Normalizer:
+class LinguisticProcessor:
     def __init__(self, tokens: list[Token]):
         self.__tokens = tokens
         self.__it = 0
@@ -317,9 +317,6 @@ class Normalizer:
     
     def __prev(self) -> Token:
         return self.__tokens[self.__it - 1]
-
-    def __next(self) -> Token:
-        return self.__tokens[self.__it + 1]
     
     def __del_this(self) -> None:
         del self.__tokens[self.__it]
@@ -377,13 +374,8 @@ class Normalizer:
                 self.__remove_empty_string()
                 continue
 
-            tokens = TextProcessing.tokenize(self.__this().value.lower())
-            processed_tokens = []
-            for token in tokens:
-                if TextProcessing.is_special(token) or \
-                    TextProcessing.is_stopword(token):
-                    continue
-                processed_tokens.append(process_token(token))
+            processed_tokens = TextProcessing.process(self.__this().value, 
+                                                      process_token)
 
             if len(processed_tokens) > 1:
                 self.__del_this()
@@ -434,7 +426,7 @@ def search(query: str, index: InvertedIndex, process_token) -> set[int]:
 
     tokens = DeMorgan(tokens).convert()
 
-    tokens = Normalizer(tokens).apply(process_token)
+    tokens = LinguisticProcessor(tokens).apply(process_token)
 
     if len(tokens) == 0:
         raise Exception('Invalid input.')

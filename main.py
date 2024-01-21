@@ -2,6 +2,7 @@ import webcrawler
 from textprocessing import TextProcessing
 from index import InvertedIndex
 import boolean
+from vector import VectorSpaceModel
 import time
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
@@ -42,7 +43,10 @@ def test():
         'data/d1705744190618.json')
 
 
-    processed_publications = process_publications(publications, 'stem')
+    processed_publications = [
+        TextProcessing.process(str(publication), TextProcessing.stem) 
+        for publication in publications
+    ]
 
     inverted_index = InvertedIndex(processed_publications)
 
@@ -50,9 +54,9 @@ def test():
     #print(inverted_index.idf('covid'))
     
     #query = '"covid-19" & ! ("heart" | "covid")'
-    #query = '!"," | !"!" & (!"syndrome," & "and" | !"or" | (!"seven" | "#"))'
+    query = '!"," | !"!" & !(!"acute syndrome" & "and" | !"or" | !(!"seven" | "#"))'
     #query = '!((("ey" & "yu")))'
-    query = '!"multiple words" & "also here"'
+    #query = '!"multiple words" & "also here"'
     #query = '!"multiple words" & "also here2"'
     #query = '!("A" | ("B" & !"C")) & "D" | !("F" & ("H" | !"G"))'
     #try:
@@ -62,7 +66,7 @@ def test():
 
     tokens = boolean.DeMorgan(tokens).convert()
 
-    tokens = boolean.Normalizer(tokens).apply(TextProcessing.stem)
+    tokens = boolean.LinguisticProcessor(tokens).apply(TextProcessing.stem)
 
     print_tokens(tokens)
     #except Exception as e:
@@ -71,26 +75,19 @@ def test():
     pass
 
 
-def process_publications(
-        publications: list[webcrawler.Publication], 
-        method: str) -> list[list[str]]:
-    processed_publications = []
-    for publication in publications:
-        processed_publication = []
-        tokens = TextProcessing.tokenize(str(publication).lower())
-        for token in tokens:
-            if TextProcessing.is_special(token) or \
-                TextProcessing.is_stopword(token):
-                continue
+def test2():
+    publications = webcrawler.Publication.import_publications(
+        'data/d1705848939400.json')
 
-            processed_token = None
-            if method == 'stem':
-                processed_token = TextProcessing.stem(token)
-            elif method == 'lem':
-                processed_token = TextProcessing.lemmatize(token)
-            processed_publication.append(processed_token)
-        processed_publications.append(processed_publication)
-    return processed_publications
+    processed_publications = [
+        TextProcessing.process(str(publication), TextProcessing.stem) 
+        for publication in publications
+    ]
+
+
+    inverted_index = InvertedIndex(processed_publications)
+
+    print(VectorSpaceModel.search(inverted_index, 'overview covid-19', TextProcessing.stem))
 
 @app.route('/get_data/<query>/<filename>/<pages>/<rpp>', methods=['GET'])
 def get_data(query: str, filename: str, pages: str, rpp: str) -> dict:
@@ -150,34 +147,31 @@ def search(dataset: str, algorithm: str, textproc: str, where: str, query: str):
         case _:
             pass
 
-    processed_publications = []
-    for publication in publications:
-        processed_publication = []
-        tokens = TextProcessing.tokenize(get_content(publication).lower())
-        for token in tokens:
-            if TextProcessing.is_special(token) or \
-                TextProcessing.is_stopword(token):
-                continue
-            processed_publication.append(process_token(token))
-        processed_publications.append(processed_publication)
+    processed_publications = [
+        TextProcessing.process(get_content(publication), process_token) 
+        for publication in publications
+    ]
 
     inverted_index = InvertedIndex(processed_publications)
 
-    publication_set = None
-    match algorithm:
-        case 'boolean':
-            try:
-                publication_set = boolean.search(query, inverted_index, 
+    retrieved_publications = None
+    try:
+        match algorithm:
+            case 'boolean':
+                retrieved_publications = boolean.search(query, inverted_index, 
                                                  process_token)
-            except Exception as e:
-                return {"error": str(e)}
-        case _:
-            pass
+            case 'vector':
+                retrieved_publications = VectorSpaceModel.search(
+                    inverted_index, query, process_token)
+            case _:
+                pass
+    except Exception as e:
+        return {"error": str(e)}
 
     selected_publications = []
     for i in range(len(publications)):
-        if i in publication_set:
-            publications[i].abstract = publications[i].abstract[0:240] + \
+        if i in retrieved_publications:
+            publications[i].abstract = publications[i].abstract[0:300] + \
                 ' [...]'
             selected_publications.append(publications[i])
     
@@ -196,7 +190,7 @@ def index():
 def main():
     TextProcessing.download_dependencies()
     app.run(debug=True)
-    #test()
+    #test2()
 
 if __name__ == "__main__":
     main()
