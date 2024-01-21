@@ -3,6 +3,7 @@ from textprocessing import TextProcessing
 from index import InvertedIndex
 import boolean
 from vector import VectorSpaceModel
+from okapi import OkapiBM25
 import time
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
@@ -163,6 +164,9 @@ def search(dataset: str, algorithm: str, textproc: str, where: str, query: str):
             case 'vector':
                 retrieved_publications = VectorSpaceModel.search(
                     inverted_index, query, process_token)
+            case 'okapi':
+                retrieved_publications = OkapiBM25.search(inverted_index, query,
+                                                          process_token)
             case _:
                 pass
     except Exception as e:

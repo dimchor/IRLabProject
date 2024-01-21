@@ -27,3 +27,9 @@ class InvertedIndex(TextCollection):
             if input not in self._texts[i].tokens:
                 s.add(i)
         return s
+
+    def average_length(self) -> float:
+        sum = 0
+        for text in self._texts:
+            sum += len(text)
+        return sum / len(self._texts)
