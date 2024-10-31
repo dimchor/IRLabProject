@@ -7,6 +7,7 @@ The following algorithms are used:
 - Boolean
 - Vector Space Model
 - Okapi BM25
+
 Additionally, an option to choose between Stemming and Lemmatization.
 
 The results are displayed in a separate pane.
